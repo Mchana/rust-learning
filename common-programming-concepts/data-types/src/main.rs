@@ -9,6 +9,7 @@ fn main() {
     tuples();
     tuple_pattern_matching();
     accessing_tuples();
+    arrays();
     //Keep in mind that Rust is a statically typed language, 
     //which means that it must know the types of all variables at compile time.
     //rust can infer variable types in mayn cases, but sometimes like above, it needs declaring
@@ -134,4 +135,29 @@ fn accessing_tuples() {
 
     //The tuple without any values has a special name, unit. 
     //This value and its corresponding type are both written () and represent an empty value or an empty return type
+}
+
+//Arrays
+//Another way to have a collection of multiple values is with an array.
+// Unlike a tuple, every element of an array must have the same type. 
+//Unlike arrays in some other languages, arrays in Rust have a fixed length.
+//Arrays are useful when you want your data allocated on the stack, the same as the other types we have seen so far, rather than the heap
+//Vectors can grow and shrink, but they live on the heap
+
+
+fn arrays() {
+    let a = [1, 2, 3, 4, 5];
+
+    //can specify type and length like this
+    let _b: [i32; 5] = [1, 2, 3, 4, 5];
+
+    //concise way of writing arrays woth same value
+    //this creates an array of [3,3,3,3,3]
+    let _c = [3; 5];
+
+    //accessing array elements
+    let _first = a[0];
+    let _second = a[1];
+
+    //Rust will panic if you try and access an array element out of rang
 }
