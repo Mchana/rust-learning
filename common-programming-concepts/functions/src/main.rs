@@ -38,7 +38,7 @@ fn another_function(x: i32) {
 //Expressions evaluate to a resultant value with no ;
 
 fn statements() {
-    let y = 6;
+    let _y = 6;
 
     //Statements do not return values. Therefore, you can’t assign a let statement to another variable, 
     //as the following code tries to do; you’ll get an error:
