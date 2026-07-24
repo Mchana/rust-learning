@@ -1,9 +1,14 @@
 //each value in rust is a data type, we have scalar and compound
 fn main() {
-    let guess: u32 = "42".parse().expect("Not a number!");
+    let _guess: u32 = "42".parse().expect("Not a number!");
     integer_literals();
     floating_point();
-    operations();_
+    operations();
+    boolean();
+    character();
+    tuples();
+    tuple_pattern_matching();
+    accessing_tuples();
     //Keep in mind that Rust is a statically typed language, 
     //which means that it must know the types of all variables at compile time.
     //rust can infer variable types in mayn cases, but sometimes like above, it needs declaring
@@ -72,4 +77,61 @@ fn operations(){
     // remainder
     let _remainder = 43 % 5;
 
+}
+
+//booleans
+fn boolean(){
+    let _t = true;
+
+    let _f: bool = false; // with explicit type annotation    
+}
+
+//char is specified with single quotes
+// Rust’s char type is 4 bytes in size and represents a Unicode scalar value, which means it can represent a lot more than just ASCII. 
+//Accented letters; Chinese, Japanese, and Korean characters; emojis; and zero-width spaces are all valid char values in Rust
+fn character(){
+    let _c = 'z';
+    let _z: char = 'ℤ'; // with explicit type annotation
+    let _heart_eyed_cat = '😻';    
+}
+
+//Compound types:
+//2 types, tuples and arrays
+
+//A tuple is a general way of grouping together a number of values 
+//with a variety of types into one compound type. 
+//Tuples have a fixed length: Once declared, they cannot grow or shrink in size.
+fn tuples(){
+    let _tup: (i32, f64, u8) = (500, 6.4, 1);
+}
+
+//The variable tup binds to the entire tuple because a 
+//tuple is considered a single compound element. 
+//to get the individual values out of a tuple, we can use pattern matching to destructure a tuple value,
+
+fn tuple_pattern_matching() {
+    let tup = (500, 6.4, 1);
+
+    let (_x, y, _z) = tup;
+
+    println!("The value of y is: {y}");
+
+    //This program first creates a tuple and binds it to the variable tup. 
+    //It then uses a pattern with let to take tup and turn it into 
+    //three separate variables, x, y, and z. This is called destructuring 
+    //because it breaks the single tuple into three parts
+}
+
+//We can also access a tuple element directly by using a period (.) followed by the index of the value we want to access.
+fn accessing_tuples() {
+    let x: (i32, f64, u8) = (500, 6.4, 1);
+
+    let _five_hundred = x.0;
+
+    let _six_point_four = x.1;
+
+    let _one = x.2;
+
+    //The tuple without any values has a special name, unit. 
+    //This value and its corresponding type are both written () and represent an empty value or an empty return type
 }
