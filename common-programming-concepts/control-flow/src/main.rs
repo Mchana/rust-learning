@@ -5,6 +5,10 @@ fn main() {
     loop_example();
     loop_returning_value();
     loop_labels();
+    while_loop();
+    while_loop_with_for();
+    while_loop_without_for();
+    while_range_example();
 
 }
 
@@ -113,4 +117,49 @@ fn loop_labels() {
         count += 1;
     }
     println!("End count = {count}");
+}
+
+//Streamlining Conditional Loops with while
+//saves us using loop with if, else and break which is a pain
+
+fn while_loop() {
+    let mut number = 3;
+
+    while number != 0 {
+        println!("{number}!");
+
+        number -= 1;
+    }
+
+    println!("LIFTOFF!!!");
+}
+
+//Looping Through a Collection with for
+fn while_loop_without_for() {
+    let a = [10, 20, 30, 40, 50];
+    let mut index = 0;
+
+    while index < 5 {
+        println!("the value is: {}", a[index]);
+
+        index += 1;
+    }
+}
+//we can compact a while loop by using "for"
+fn while_loop_with_for() {
+    let a = [10, 20, 30, 40, 50];
+
+    for element in a {
+        println!("the value is: {element}");
+    }
+} //this is safer than a regular while loop and a loop loop
+
+//we can also use a Range 
+//this example also uses .rev
+
+fn while_range_example() {
+    for number in (1..4).rev() {
+        println!("{number}!");
+    }
+    println!("LIFTOFF!!!");
 }
