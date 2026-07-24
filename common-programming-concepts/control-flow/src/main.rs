@@ -3,6 +3,8 @@ fn main() {
     if_else_expression();
     let_if();
     loop_example();
+    loop_returning_value();
+    loop_labels();
 
 }
 
@@ -58,5 +60,57 @@ fn let_if() {
 fn loop_example() {
     loop {
         println!("again!");
+        break
     }
-} //this will run until we CTRL+C
+} //this will run until we CTRL+C (the break is so i don't break the computer)
+
+//Returning Values from Loops
+//One of the uses of a loop is to retry an operation you know might fail, 
+//such as checking whether a thread has completed its job. 
+//You might also need to pass the result of that operation out of the 
+//loop to the rest of your code. 
+//To do this, you can add the value you want returned after the 
+//break expression you use to stop the loop; that value will be r
+//eturned out of the loop so that you can use it, as shown here:
+
+fn loop_returning_value() {
+    let mut counter = 0;
+
+    let result = loop {
+        counter += 1;
+
+        if counter == 10 {
+            break counter * 2;
+        }
+    };
+
+    println!("The result is {result}");
+}
+
+//Disambiguating with Loop Labels
+//If you have loops within loops, break and continue apply to the 
+//innermost loop at that point. You can optionally specify a loop label 
+//on a loop that you can then use with break or continue to specify that those keywords 
+//apply to the labeled loop instead of the innermost loop. Loop labels must begin with a single quote.
+
+fn loop_labels() {
+    let mut count = 0;
+    'counting_up: loop {
+        println!("count = {count}");
+        let mut remaining = 10;
+
+        loop {
+            println!("remaining = {remaining}");
+            if remaining == 9 {
+                break;
+            }
+            if count == 2 {
+                break 'counting_up;
+            }
+            remaining -= 1;
+        }
+
+        count += 1;
+    }
+    println!("End count = {count}");
+}
