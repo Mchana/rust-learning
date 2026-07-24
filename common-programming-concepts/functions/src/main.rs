@@ -5,6 +5,8 @@ fn main() {
     parameters();
     statements();
     expressions();
+    five();
+    func_with_return_value();
 }
 //Rust doesn’t care where you define your functions, only that they’re defined somewhere in a scope that can be seen by the caller
 //they can be before or after "main", we love a compiled language
@@ -53,4 +55,25 @@ fn expressions() {
     };
 
     println!("The value of y is: {y}");
+}
+
+//Functions with Return Values
+//Functions can return values to the code that calls them. 
+//We don’t name return values, but we must declare their type after an arrow (->). 
+//In Rust, the return value of the function is 
+//synonymous with the value of the final expression in the block of the body of a function. 
+//You can return early from a function by using the return keyword and specifying a value, 
+//but most functions return the last expression implicitly. 
+
+//this is perfectly valid - you can have a function that just returns a value by itself
+//however, we must define the type here
+//it has no ; becuase it an expression - we want  return value
+fn five() -> i32 {
+    5
+}
+
+fn func_with_return_value() {
+    let x = five();
+
+    println!("The value of x is: {x}");
 }
