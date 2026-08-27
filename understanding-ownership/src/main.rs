@@ -17,6 +17,9 @@ fn main() {
     mutable_and_immutable_refs();
     dangle();
     uses_first_word();
+    string_slice_example();
+    uses_first_word_2();
+    string_slices_as_parameters();
 }
 
 //Ownership
@@ -560,4 +563,197 @@ fn uses_first_word() {
 
     //word still has the value 5 here, but s no longer has any content that we could 
     //meaningfully use here with the value 5, so word is now totally invalid
+}
+
+//this program compiles without any errors and would also do so if we used "word" after calling
+// s.clear(). Because "word" isn't connected to the state of s at all, word still contains the
+//value of 5. We could use that value 5 with the variabel s to try and extract the first
+//word out, but this would be a bug because the contents of s have changed since we saved 5
+//in "word"
+
+//Having to worry about the index in word getting out of sync with the data in s
+// is tedious and error-prone! 
+//Managing these indices is even more brittle if we write a second_word function. 
+//Its signature would have to look like this:
+
+/*
+n second_word(s: &String) -> (usize, usize) {}
+*/
+
+//Now we’re tracking a starting and an ending index, 
+//and we have even more values that were calculated from 
+//data in a particular state but aren’t tied to that state at all. 
+//We have three unrelated variables floating around that need to be kept in sync.
+
+//the solution to this - string slices
+
+// --String Slices
+
+//a string slice is a reference to a contigious sequence of the elements of a String
+
+fn string_slice_example() {
+    let s = String::from("hello world!");
+    let _hello = &s[0..5];
+    let _world = &[6..11];
+}
+//rather than reference the entire String, hello is a reference to a potion of the string
+//the slice data internally stores the starting position and length of the slice
+// if we have s stored as"hello world" stored in memory, the pointer of world would 
+//point to index 6, the "w", with a length of 5. it won't have a capacity
+
+//with Rust's range syntax, you can drop the 0 before the ..
+/*
+let slice = &s[..2];
+*/
+
+//if your slice includes the last value, you can drop the trailing number
+/*
+let len = s.len();
+let slice = &s[3..len];
+let slice = &s[3..];
+these are equivalent
+*/
+
+//you can drop both values to take a slice of the entire string
+/*
+let len = s.len();
+let slice = &s[0..len];
+let slice = &s[..];
+these are equivalent
+*/
+
+//string slices must occuer at valid UTF-8 character boundaries - if you attempt to 
+//create a string slice in the middle of a multi-byte character, your program will
+//exit with an error
+
+//let's rewrite first_word to return a slice
+
+//fn to use the rewritten first word
+fn uses_first_word_2() {
+    let mut s = String::from("hello world");
+    let _word = first_word_slice(&s); 
+    s.clear(); 
+}
+
+fn first_word_slice(s: &str) -> &str {
+    let bytes = s.as_bytes();
+    for (i, &item) in bytes.iter().enumerate() {
+        if item == b' ' {
+            return &s[0..i];
+        }
+    }
+    &s[..]
+}
+
+//We get the index for the end of the word the same way we did in Listing 4-7, 
+//by looking for the first occurrence of a space. When we find a space, 
+//we return a string slice using the start of the string and 
+//the index of the space as the starting and ending indices.
+
+//Now when we call first_word, we get back a single value that is tied to the underlying data.
+//The value is made up of a reference to the starting point of the slice and 
+//the number of elements in the slice.
+
+//We now have a straightforward API that’s much harder to mess up because the 
+//compiler will ensure that the references into the String remain valid.
+
+//Using the slice version of first_word will throw a compile-time error:
+
+/*
+Filename: src/main.rs
+This code does not compile!
+fn main() {
+    let mut s = String::from("hello world");
+
+    let word = first_word(&s);
+
+    s.clear(); // error!
+
+    println!("the first word is: {word}");
+}
+Here’s the compiler error:
+
+$ cargo run
+   Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+  --> src/main.rs:18:5
+   |
+16 |     let word = first_word(&s);
+   |                           -- immutable borrow occurs here
+17 |
+18 |     s.clear(); // error!
+   |     ^^^^^^^^^ mutable borrow occurs here
+19 |
+20 |     println!("the first word is: {word}");
+   |                                   ---- immutable borrow later used here
+
+For more information about this error, try `rustc --explain E0502`.
+error: could not compile `ownership` (bin "ownership") due to 1 previous error
+*/
+
+//Recall from the borrowing rules that if we have an immutable reference to something, 
+//we cannot also take a mutable reference. 
+//Because clear needs to truncate the String, it needs to get a mutable reference. 
+//The println! after the call to clear uses the reference in word, 
+//so the immutable reference must still be active at that point. 
+//Rust disallows the mutable reference in clear and the immutable reference in word 
+//from existing at the same time, and compilation fails.
+// Not only has Rust made our API easier to use, 
+//but it has also eliminated an entire class of errors at compile time!
+
+// --String literals as slices
+
+//now that we know about slices, we can properly understand string literals
+
+/*
+let s  = "hello, world!":
+*/
+//the type of s here is &str, it's a slice pointing to that specific point of the binary
+//this is also why string literals are immuntable, &str is an immutable reference
+
+// --String slices as parameters
+
+//being able to take slices of literals and String values leads to one more improvement
+//on first_word, and that's it's signature
+
+/*
+fn first_words(s: &String) -> &str {}
+
+a more experienced Rustacean would use the below instead as it allows us to use the same
+function for both &String and &str values
+
+fn first_words(s: &str) -> &str {}
+*/
+
+//if we have a string slice, we can pass that directly
+//if we have String, we can pass a slice of the String or a reference to the String
+// this flexibility takes advantage of deref coersions, (later on)
+
+//defining a function to take a string slice instead of a reference to a String makes our API
+//more general and useful without losing functionality
+
+fn string_slices_as_parameters() {
+    let my_string = String::from("hello world");
+
+    //first_word_slice() works on slices of Strings, whether partial or whole
+
+    let _word = first_word_slice(&my_string[0..6]);
+    let _word = first_word_slice(&my_string[..]);
+
+    //first_word_slice() also works on references to strings, which are equivalent
+    //to whole slices of strings
+
+    let _word = first_word_slice(&my_string);
+    let my_string_literal = "hello world";
+
+    //first_word_slice() also works on string literals, whether partial or whole
+
+
+    let _word = first_word_slice(&my_string_literal[0..6]);
+    let _word = first_word_slice(&my_string_literal[..]);
+
+    //because string literals are string slices already, this works too without another
+    //slice syntax
+
+    let _word = first_word_slice(my_string_literal);
 }
