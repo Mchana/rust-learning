@@ -20,6 +20,7 @@ fn main() {
     string_slice_example();
     uses_first_word_2();
     string_slices_as_parameters();
+    other_slices();
 }
 
 //Ownership
@@ -756,4 +757,19 @@ fn string_slices_as_parameters() {
     //slice syntax
 
     let _word = first_word_slice(my_string_literal);
+}
+
+// --Other slices
+
+//String slices are specific to strings, but there's a more general type too
+
+fn other_slices() {
+    let a = [1,2,3,4,5];
+
+    //just like we might want to refer to part of a string, we might want to refer to part
+    //of an array
+    let slice = &a[1..3];
+
+    assert_eq!(slice, &[2,3]);
+    //this just shows that slice is equal to an array with the values [2,3]
 }
