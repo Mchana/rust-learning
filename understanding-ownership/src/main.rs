@@ -12,6 +12,8 @@ fn main() {
     ownership_and_functions();
     return_values_and_scope();
     references_and_borrowing();
+    mutable_references();
+    multiple_mut_references();
 }
 
 //Ownership
@@ -297,8 +299,95 @@ fn references_and_borrowing(){
     println!("The length of '{s1}' is {len}.");
 }
 
-fn calculate_length2(s: &String) ->usize {
+fn calculate_length2(s: &String) ->usize { //s is a reference to the String
     s.len()
+} //here s goes out of scope, but because s does not have ownership, it is not dropped
+
+//the tuple code in the variable declaration and the function return is gone
+// we pass &s1 into calculate_length2, and in it's definition we take &String rather than String
+// & represents references, and they allow you to refere to a value without taking ownership
+
+//the opposite of referencing is dereferencing, using the * operator which we'll explore later
+
+//when functions have references instead of parameters, we don't need to return the value
+//because we never had ownership
+//we call the action of reference "borrowing" as when we're done with it, we give it back
+
+//what if we try to modify something we're borrowing? it doesn't work
+
+/*
+fn main() {
+    let s = String::from("hello");
+
+    change(&s);
 }
 
-//the tuple code in the variable declaration and the function return is come
+fn change(some_string: &String) {
+    some_string.push_str(", world");
+}
+*/
+
+// -- Mutable references
+
+fn mutable_references() {
+    let mut s = String::from("hello");
+    change(&mut s);
+}
+
+fn change(some_string: &mut String) {
+    some_string.push_str(" , world");
+}
+
+//to make a mutable reference, first we change s to be mut
+//then we create a mutable reference with &mut s, and update the function signature to accept
+//a mutable reference. This makes it very clear that the change() function will mutate the
+//value it borrows
+
+//mutable references have one big restriction - if you have a mut references to that value,
+// you can have no other references to that value. This code that attempts to create 2
+//mut references to s will fail
+
+/*
+let mut s = String::from("hello");
+
+    let r1 = &mut s;
+    let r2 = &mut s;
+
+    println!("{r1}, {r2}");
+
+$ cargo run
+   Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0499]: cannot borrow `s` as mutable more than once at a time
+ --> src/main.rs:5:14
+  |
+4 |     let r1 = &mut s;
+  |              ------ first mutable borrow occurs here
+5 |     let r2 = &mut s;
+  |              ^^^^^^ second mutable borrow occurs here
+6 |
+7 |     println!("{r1}, {r2}");
+  |                -- first borrow later used here
+
+For more information about this error, try `rustc --explain E0499`.
+error: could not compile `ownership` (bin "ownership") due to 1 previous error
+ */
+
+//this prevents "data races" at compile time, which heppens when 3 conditions occur:
+//-2 or more pointers are used to access data at the same time
+//-at least one of the pointers is being used to write to the data
+//- there's no mechanism being used to syncronise access to the data
+
+//data races cause undefined behaviour adn can be difficult to diagnose and ficx
+//when you're trying to track them down at runtime
+//Rust prevents this by refusing to compile code with multiple data races
+
+fn multiple_mut_references() {
+    let mut s = String::from("hello");
+
+    {
+        let _r1 = &mut s;
+
+    } //r1 goes out of scope here, so we can make a new reference here with no problems
+    let _r2 = &mut s;
+}
+//as we can see, Rust allowed for multiple references, just not simultaneous ones
