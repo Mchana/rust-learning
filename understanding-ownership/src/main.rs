@@ -6,6 +6,12 @@ fn main() {
     string_example_mutation();
     memory_example();
     interacting_with_move();
+    scope_and_assignment();
+    fun_with_clone();
+    copying_stack_only_data();
+    ownership_and_functions();
+    return_values_and_scope();
+    references_and_borrowing();
 }
 
 //Ownership
@@ -127,18 +133,133 @@ fn interacting_with_move(){
 //the pointer still points to the same place in the heap, it does not copy the data
 //this saves runtime if the data is large
 
+//as said earlier, when a vairable goes out of scope, Rust calls a "drop" function
+//if both s1 and s2 point to the same location, this causes a problem
+//if both go out of scope, they will try and free the same memory
+//this is a "double free" error, a memory safety bug that can cause memory corruption and 
+//security vulnerabilities
+//hence after s2=s1, Rust considers s1 no longer vaild, and doesn't need to free anything
+
+//this could be considered a "shallow copy" in other languages, because it copies the 
+//pointer, length and capacity without copying the data
+//however, because Rust invalidates s1, it is actually a "move"
+//Rust will NEVER automatically create a "deep" copy
+//hence any automatic copying will be inexpensive in terms of performance
 
 
+//the inverse is true for the relationship between scoping, ownership and memory
+//being freed via the "drop" function
+//when you assign a completely new value to an existing variable, Rust will
+//call drop and free the existing memory immediately
+fn scope_and_assignment() {
+    #[allow(unused_assignments)]
+    let mut s = String::from("hello");
+    s = String::from("ahoy");
+    print!("{s}, world!");
+} //here, "hello" is immediately replaced with "ahoy", so the print will be "ahoy, world!"
 
+// --Cloning data
 
+//if we do want to do a deep copy of the data, we can use clone
 
+fn fun_with_clone(){
+    let s1 = String::from("hello");
+    let s2 = s1.clone();
+    print!("s1 = {s1}, s2 = {s2}");
+} //this explicitly copies the heap data
 
+// -- Copying stack only data
 
+fn copying_stack_only_data(){
+    let x = 5;
+    let y = x;
+    print!("x = {x}, y = {y}");
+}
 
+//this seems to contradict the above - we didn't clone x, but it is still valid and 
+//wasn't moved into y
+//this is because types such as integers have a known size at compile time,
+//and so are copied to the stack rather than the heap, so copies are quick to make
+//there's no reason we would want to prevent x being valid after y in this case,
+//meaning there's no difference between deep and shallow copying. Calling "clone"
+//wouldn't do anything different from a shallow copy, so we leave it out
 
+//Rust has a special annotation called the "copy" trait that can be placed on types stored
+//on the stack, such as integers. if a type implements the "copy" trait, variables that use it
+//do not move, but rather are trivially copied, making them still valid after assignment 
+//to another variable
 
+//Rust won't let us annotate a type with the "copy" trait if the type, or any of it's parts
+//has implemented the "drop" trait
+//if the type needs something special to happen when the value goes out of scope and we 
+//add the "copy" trait, we'll get a compile time error
 
+//as a general rule, any group of simple scalar values can implement "copy",
+//and and nothing that requires allocation or is some form of resource can implement "copy"
+//some types that use copy include:
+// All the integer types, such as u32.
+// The Boolean type, bool, with values true and false.
+// All the floating-point types, such as f64.
+// The character type, char.
+// Tuples, if they only contain types that also implement Copy.
+//  For example, (i32, i32) implements Copy, but (i32, String) does not.
 
+// -- Ownership and functions
+//the mechanics of passing a value to a function are similar to to those as when assigning a 
+//value to a variable
+//passing a variable to a function will move or copy, just as assignment does
+
+//this is an example of variables going in and out of scope:
+fn ownership_and_functions(){
+    let s = String::from("hello"); //s comes into scope
+    takes_ownership(s); // s's vaslue moves into the function
+                        //and so is no longer valid here
+    let x = 5;          //x comes into scope
+    makes_copy(x);      //because i32 implements the copy trait
+                       // x does NOT move into the function
+                        //so it's ok to use x afterwards
+} //here x goes out of scope, then s. because s's value was moved, nothing special happens
+
+fn takes_ownership(some_string: String) { //some_string comes into scope
+    print!("{some_string}");
+} //some_string goes out of scope and "drop" is called, the backing memory is freed
+
+fn makes_copy(some_integer: i32) { //some_integer comes into scope
+    print!("{some_integer}");
+} //some_integer goes out of scope. Nothing special happens
+
+//if we tried to use s after the call to takes_ownership(), Rust would throw a compile time
+//error. These static checks prevent us from mistakes. 
+
+// -- Return values and scoe
+
+//Return values can also transfer ownership
+
+fn return_values_and_scope(){
+    let _s1 = gives_ownership(); //gives_ownership moves its return value into s1
+    let s2 = String::from("hello"); //s2 comes into scope
+    let _s3 = takes_and_gives_back(s2); //s2 is moved into takes_and_gives_back, which also
+                                       //moves it's return value into s3
+} //here, s3 goes out of scope and is dropped. s2 was moved, so nothing happens. s1
+//goes out of scope and is dropped
+fn gives_ownership() -> String { //gives_ownership will move its return value into the funtion
+                                 //that calls it
+    let some_string = String::from("yours"); //some_string comes into scope
+    some_string //some_string is returned and moves out to the calling function
+}
+//this function takes a string and returns a string
+fn takes_and_gives_back(a_string: String) -> String { //a_string comes into scope
+    a_string //is returned and moves out to the calling function
+}
+
+//the ownership of a variable follows the same pattern every thing: assigning a value
+// to another variable moves it. When a variable that includes data on the heap moves
+//out of scope, the value will be cleaned up by "drop" unless ownership of the 
+//data has been moved to another variable
+
+//while this works, taking ownership and then returning ownership with every function
+//is a bit tedious. What if we want to let a funcion use a value but not take ownership?
+//we can solve this tedium using a tuple
 
 //returning multiple values using a tuple
 fn return_multiple_values(){
@@ -154,4 +275,30 @@ fn calculate_length(s:String) -> (String, usize) {
 
 //the above is kind of a pain and there's a better way to do it
 
-//References and Borrowing
+// --References and Borrowing
+//this is a way to use a value without transferring ownership - references
+//the issue with the above tuple code is that we have to return the String to the calling
+//function so that we can still use the String after the call to calculate_length, becauase
+//the String was moved into that function
+
+//instead, we can provide a reference to the String value
+//a reference is like a pointer, in that in that it's an address we can follow to access data 
+//stored at that address, that data is owened by by some other variable
+//unlike a pointer, a reference is guaranteed to point to a particular value
+//for the life of that reference
+
+
+//here is a way we can define and use a calculate_length function that has a reference
+//to an object as a parameter instead of taking ownership of the value
+
+fn references_and_borrowing(){
+    let s1 = String::from("hello");
+    let len = calculate_length2(&s1);
+    println!("The length of '{s1}' is {len}.");
+}
+
+fn calculate_length2(s: &String) ->usize {
+    s.len()
+}
+
+//the tuple code in the variable declaration and the function return is come
