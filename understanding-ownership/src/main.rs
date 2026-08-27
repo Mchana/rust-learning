@@ -14,6 +14,8 @@ fn main() {
     references_and_borrowing();
     mutable_references();
     multiple_mut_references();
+    mutable_and_immutable_refs();
+    dangle();
 }
 
 //Ownership
@@ -391,3 +393,112 @@ fn multiple_mut_references() {
     let _r2 = &mut s;
 }
 //as we can see, Rust allowed for multiple references, just not simultaneous ones
+
+//Rust also has a similar rule for combining mutable and immutable references
+
+/*
+    let mut s = String::from("hello");
+
+    let r1 = &s; // no problem
+    let r2 = &s; // no problem
+    let r3 = &mut s; // BIG PROBLEM
+
+    println!("{r1}, {r2}, and {r3}");
+
+$ cargo run
+Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0502]: cannot borrow `s` as mutable because it is also borrowed as immutable
+--> src/main.rs:6:14
+|
+4 |     let r1 = &s; // no problem
+|              -- immutable borrow occurs here
+5 |     let r2 = &s; // no problem
+6 |     let r3 = &mut s; // BIG PROBLEM
+|              ^^^^^^ mutable borrow occurs here
+7 |
+8 |     println!("{r1}, {r2}, and {r3}");
+|                -- immutable borrow later used here
+
+For more information about this error, try `rustc --explain E0502`.
+error: could not compile `ownership` (bin "ownership") due to 1 previous error
+
+ */
+
+ //we also cannot have a mutable reference while we have an immutable references to the same value
+
+//we can have multiple immutable references because they don't change the value of data
+
+//for example, this will compile because it has the last use of immutable references  
+//and the mutablea ref is after the println!
+
+fn mutable_and_immutable_refs() {
+    let mut s = String::from("hello");
+    let r1 = &s;
+    let r2 = &s;
+    println!("{r1} and {r2}");
+    //r1 and r2 won't be used after this point
+    let r3 = &mut s;
+    print!("{r3}");
+}
+
+// --Dangling references
+
+//in languages with pointers, it is easy to create a dangling pointer - a pointer that
+//references a location in memory that may have been given to someone else
+//rust prevents these with compile time errors
+
+/*
+fn main() {
+    let reference_to_nothing = dangle();
+}
+
+fn dangle() -> &String {
+    let s = String::from("hello");
+
+    &s
+}
+
+    $ cargo run
+Compiling ownership v0.1.0 (file:///projects/ownership)
+error[E0106]: missing lifetime specifier
+--> src/main.rs:5:16
+|
+5 | fn dangle() -> &String {
+|                ^ expected named lifetime parameter
+|
+= help: this function's return type contains a borrowed value, but there is no value for it to be borrowed from
+help: consider using the `'static` lifetime, but this is uncommon unless you're returning a borrowed value from a `const` or a `static`
+|
+5 | fn dangle() -> &'static String {
+|                 +++++++
+help: instead, you are more likely to want to return an owned value
+|
+5 - fn dangle() -> &String {
+5 + fn dangle() -> String {
+|
+
+For more information about this error, try `rustc --explain E0106`.
+error: could not compile `ownership` (bin "ownership") due to 1 previous error
+
+ */
+
+//in this code, because s is create inside dangle(), when the code of dangle() is finished,
+//s will be deallocated. but we tried to return a reference to it - this means the ref will
+//point to an invalid String. Rust won't let us do this
+//the solution here is to return the String directly
+
+fn dangle() -> String {
+    let s = String::from("hello");
+    s
+}
+
+//this works as ownership is moved out, and nothing is deallocated
+
+//rules of references:
+//-at any time you can have either one mutable reference or any number of immutable refs
+//references must always be valid
+
+// --Slices
+
+//Slices let you reference a contiguous series of elements in a collection. A slice is a kind
+//of reference, so it doesn not have ownership
