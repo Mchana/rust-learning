@@ -43,6 +43,7 @@ fn struct_instance_example(){
 
 //we can also pass fields into functions like this
 
+#[allow(dead_code)] 
 fn build_user(email: String, username: String) -> User {
     User {
         active: true,
@@ -59,6 +60,7 @@ fn build_user(email: String, username: String) -> User {
 //use the field init shorthand to rewrite the above so it behaves the same,/
 //but without the repetition
 
+#[allow(dead_code)] 
 fn build_user_init(email: String, username: String) -> User {
     User {
         active: true,
