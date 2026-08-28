@@ -138,3 +138,77 @@ fn tuple_structs_example() {
 
 // -- Defining unit-like structs
 
+//you can also define struct that don't have any fields - these are called unit-liek structs
+//because they behave similarly to (), the unit type from tuples
+//they can be useful when you want to implement a trait on some type but don't have any
+//that you want to store in the type itself
+//i don't know what traits are :( that's later on in like 5 chapters
+
+//anyway here's an example
+
+struct AlwaysEqual;
+
+#[allow(dead_code)] 
+fn unit_like_structs(){
+    let _subject = AlwaysEqual;
+}
+
+//To define AlwaysEqual, we use the struct keyword, the name we want, and then a semicolon. 
+//No need for curly brackets or parentheses! 
+//Then, we can get an instance of AlwaysEqual in the subject variable in a similar way: 
+//using the name we defined, without any curly brackets or parentheses. 
+//Imagine that later we’ll implement behavior for this type such that every instance 
+//of AlwaysEqual is always equal to every instance of any other type, 
+//perhaps to have a known result for testing purposes. 
+//We wouldn’t need any data to implement that behavior! 
+
+//we'll learn later how to define structs and implement them
+
+// --> Ownership of Struct Data
+
+//earlier, we used the owned String instead of the &str slice type
+//this is because the tutorial wanted each instance of this struct to own it's own data
+//and that data to be valid for as long as the entire struct is valid
+
+//it's also possible for structs to store references to data owned by something else
+//this requires the use of lifetimes, which ensure the data referenced is valid for as long
+//as the struct is
+
+/*
+struct User {
+    active: bool,
+    username: &str,
+    email: &str,
+    sign_in_count: u64,
+}
+
+fn main() {
+    let user1 = User {
+        active: true,
+        username: "someusername123",
+        email: "someone@example.com",
+        sign_in_count: 1,
+    };
+}
+*/
+
+// this won't work - the compiler will complain that it needs lifetime specifiers
+
+/*
+struct User {
+    active: bool,
+    username: &str,
+    email: &str,
+    sign_in_count: u64,
+}
+
+fn main() {
+    let user1 = User {
+        active: true,
+        username: "someusername123",
+        email: "someone@example.com",
+        sign_in_count: 1,
+    };
+}
+*/
+
