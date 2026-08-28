@@ -1,5 +1,7 @@
 fn main() {
     struct_instance_example();
+    update_user();
+    tuple_structs_example();
 }
 
 //structs are a data type that lets you package together and name multiple related values that
@@ -13,6 +15,7 @@ fn main() {
 //do define it we enter the keyword "struct", then inside define the 
 //names and types of pieces of data, called fields
 
+#[allow(dead_code)] 
 struct User {
     active: bool,
     username: String,
@@ -69,3 +72,69 @@ fn build_user_init(email: String, username: String) -> User {
         sign_in_count: 1,
     }
 }
+
+// --Creating instances with the Struct Update syntax
+
+//sometimes we want to reuse a struct with most of the values of another instace of the same
+//type but chanes some of them
+//we can do this using the struct update syntax
+
+fn update_user() {
+    let user1 = User { //changed to mut to demonstrate dot notation
+    active: true,
+    username: String::from("somesuername1234"),
+    email: String::from("someone@example.com"),
+    sign_in_count: 1,
+    };
+
+    let user2 = User {
+      active: user1.active,
+      username: String::from("username"),
+      email: user1.email,
+      sign_in_count: user1.sign_in_count,
+    };
+    //we can also do this with less code
+    let _user3 = User {
+        username: String::from("usergnome"),
+        ..user2 //..user2 means that fields not set should have the same value as user2
+                //this must come last
+    };
+}
+
+//the struct update syntax uses = as an assignment, because it moves the data
+//we can no longer use user 2 after creating user3 as the string of email was moved into user3
+//active and sign in are types that implement the copy trait, so we could still use those
+//we can also use user2.email as it hasn't been moved out of user2
+
+// -- Creating different types with tuple structs
+
+//Rust supports structs that look similar to tuples, called "tuple structs" 
+//this means they have the added meaning the struct name provides, but don't have names
+//associated with their fields - they just have the types
+//This is useful when you want to give a whole tuple a name and make it different from other tuples
+//and when naming each field would be verbose or redundant
+
+fn tuple_structs_example() {
+    #[allow(dead_code)] 
+    struct _Colour(i32, i32, i32);
+    struct Point(i32, i32, i32);
+
+    let _black = _Colour(0,0,0,);
+    let origin = Point(0,0,0);
+
+    let Point(_x,_y,_z) = origin;
+    //used to destructure the values in origin into variables named x y and z
+}
+
+//the black and origin fields are different types because they're instances of different
+//tuple structs. Each struct you define is it's own type, even though the fields within may
+//have the same type
+//for example a function that takes the parameter of type Colour cannot take Point as an argument
+//even thought they're made up of the same values
+//they're similar to tuples in that they can be destructured into individual pieces
+//and you can use a. to access the indivial values. Unlike tuples, tuple structs require 
+//you to name the type of struct when you destructure them
+
+
+// -- Defining unit-like structs
+
