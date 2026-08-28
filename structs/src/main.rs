@@ -212,3 +212,4 @@ fn main() {
 }
 */
 
+//example program for structs in "rectangles" crate
