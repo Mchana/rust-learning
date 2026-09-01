@@ -144,7 +144,9 @@ error[E0277]: `Rectangle` doesn't implement `Debug`
 
  #[derive(Debug)]
  struct Rectangle2 {
+    #[allow(dead_code)]
     width: u32,
+    #[allow(dead_code)]
     height:u32,
  }
 
@@ -160,7 +162,7 @@ error[E0277]: `Rectangle` doesn't implement `Debug`
 
 //there are also cases where we're interested in the value of width, as well as the struct
  
-// --using dbg!
+// --Using dbg!
 
 fn rectangles_with_dbg(){
     let scale = 2;
