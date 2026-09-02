@@ -32,7 +32,7 @@ impl Rectangle {
     fn can_hold(&self, other: &Rectangle) -> bool {
         self.width > other.width && self.height > other.height
     }
-
+    #[allow(dead_code)]
     fn square(size: u32) -> Self {
         Self {
             width: size,
