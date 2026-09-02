@@ -3,6 +3,7 @@ use std::u32;
 fn main() {
     calc_rectangle();
     rectangle_with_impl_struct_parameter();
+    rectangle_can_hold();
 }
 
 //Methods are similar to functions: 
@@ -26,6 +27,10 @@ struct Rectangle {
 impl Rectangle {
     fn area(&self) -> u32 {
         self.width * self.height
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
     }
 }
 
@@ -83,6 +88,7 @@ fn calc_rectangle() {
 #[derive(Debug)]
 struct Rectangle2{
     width: u32,
+    #[allow(dead_code)]
     height: u32,
 }
 
@@ -149,4 +155,62 @@ p1.distance(&p2);
 
  // --Methods with more parameters
 
-//we can add multiple 
+//we can add multiple methods on structs, for example for this program
+
+//This time we want an instance of Rectangle to take another instance of Rectangle and 
+//return true if the second Rectangle can fit completely within self (the first Rectangle); 
+//otherwise, it should return false.
+
+fn rectangle_can_hold() {
+    let rect1 = Rectangle {
+        width: 30,
+        height: 50,
+    };
+        let rect2 = Rectangle {
+        width: 10,
+        height: 40,
+    };
+        let rect3 = Rectangle {
+        width: 60,
+        height: 45,
+    };
+
+     println!(
+    "can rect1 hold rect2? {}", 
+    rect1.can_hold(&rect2));
+        println!(
+    "can rect1 hold rect3? {}", 
+    rect1.can_hold(&rect3)); 
+}
+
+//we would expect this for the output
+//Can rect1 hold rect2? true
+//Can rect1 hold rect3? false
+
+// we know we want to define a methods, so it will be within the impl Rectangle block
+//this method name will be can_hold, and will take an immutable borrow of another Rectangle
+//as a parameter
+//we can tell what type the parameter will be by looking at the code that calls the method:
+//rect1.can_hold(&rect2) passes in &rect2, which is an immutable borrow to rect2
+//because we only read to read rect2(rather than a write, which would use an immutable borrow)
+//and we want the rectangle_can_hold() to maintain ownership of rect2 so we can use it again
+//after calling the can_hold method
+//the return value of can_hold will be a Boolean, and the implementation will check whether
+//the width and height of self are greater than the width and height of the other Rectangle,
+//respectively
+
+//this code is added to the above impl block, it's here too just for continuity
+
+/*
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+*/
+
+//now when we run this code with "cargo run", we should get the desired output
