@@ -32,6 +32,14 @@ impl Rectangle {
     fn can_hold(&self, other: &Rectangle) -> bool {
         self.width > other.width && self.height > other.height
     }
+
+    fn square(size: u32) -> Self {
+        Self {
+            width: size,
+            height: size,
+        }
+    }
+    
 }
 
 fn calc_rectangle() {
@@ -214,3 +222,76 @@ impl Rectangle {
 */
 
 //now when we run this code with "cargo run", we should get the desired output
+
+// --Associated Functions
+
+//All functions within an impl block are caled associated functions because they're
+//associated with the type named after the impl
+//we can define associated functions that don't have self as their first parameter
+//(and thus are not methdos) because they don't need an instance of the type to work with
+//we've already used one function like this - the String::from() function associated with
+//the String type
+
+//Associated funtions that aren't methods aren't often used for constructors that will return
+//a new instance of the struct
+//these are often called "new". but "new" isn't a sepcial name and isn't built into the language
+//for example, we could choose to procide an associated function names "square" that
+//would have one dimension parameter and use that as both width and height,
+//thus making it easier to create a square Rectangle rather than having to specify 
+//the same value twice
+
+/*
+impl Rectangle {
+    fn square(size: u32) -> //1 Self { 
+//2        Self {
+            width: size,
+            height: size
+        }
+    }
+} 
+*/
+
+//The Self keyword in the return type //1 and in the body of the function //2 are aliases
+//for the type that appears after the impl keyword, which in this case is Rectangle
+
+//to call this assocated function, we use the :: syntax with the struct name,
+/*
+let sq = Rectangle::square(3);
+*/
+
+//this function is namespaced by the struct - the :: syntax is used for both associated functions
+//and namespaces created by modules
+
+
+// --Multiple impl blocks
+
+//Each struct is allowed to have multiple impl blocks, for example
+
+/*
+impl Rectangle {
+    fn area(&self) -> u32 {
+        self.width * self.height
+    }
+}
+
+impl Rectangle {
+    fn can_hold(&self, other: &Rectangle) -> bool {
+        self.width > other.width && self.height > other.height
+    }
+}
+
+*/
+
+//there's no reason to do it here, but it is valid syntax
+
+// --Summary
+
+//Structs let you create custom types that are meaningful for your domain.
+// By using structs, you can keep associated pieces of data connected to each other 
+//and name each piece to make your code clear. 
+//In impl blocks, you can define functions that are associated with your type, 
+//and methods are a kind of associated function that let you specify the behavior 
+//that instances of your structs have.
+
+//But structs aren’t the only way you can create custom types:
+// Let’s turn to Rust’s enum feature to add another tool to your toolbox.
